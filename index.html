@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)https://guides.github.com/introduction/git-handbook/ -->
+<html lang="en">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+      <title>Liquid Fill Guage Tutorial</title>
+      <!-- <link rel="icon" type="image/x-icon" href="https://guides.github.com/favicon.ico"> -->
+
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+
+      <link rel="icon" href="water.png" >
+
+      <link rel="stylesheet" href="gridism.css">
+      <link rel="stylesheet" href="markdown.css">
+      <link rel="stylesheet" href="octicons.css">
+      <link href="main.css" rel="stylesheet">
+      <link href="pygments.css" rel="stylesheet">
+
+      <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+      <link href="prism.css" rel="stylesheet" />
+
+      <script type="text/javascript" async="" src="ga.js"></script><script src="jquery.js" type="text/javascript"></script>
+      <script src="snap.svg-min.js" type="text/javascript"></script>
+      <script src="application.js" type="text/javascript"></script>
+
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-3769691-29']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+
+    </head>
+
+    <body style="background-color:#90b5dd">
+
+        <article class="full">
+            <div class="article-heading js-article-heading js-geopattern" style="background-color:#90b5dd">
+                <div class="wrap">
+                  <h1>Liquid Fill Gauge Tutorial</h1>
+                  <p style="color:#e5bc82"><b> Graduate Project by Aqsa Junagadhwala (aqjunag1@neiu.edu)</b></p>
+                </div>
+            </div>
+
+            <div class="wrap">
+                <div class="toc-wrapper"><ol class="toc js-toc sticky"></ol></div>
+
+                <div class="markdown-body content-body">
+
+                  <p><a id="intro" title="Introduction" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Introduction</h3>
+
+                    <p><i class="fa fa-bullseye" aria-hidden="true"></i></i> In this tutorial, you will learn how to use Liquid Fill Gauges to display data as tooltips. The Liquid Fill Guage feature is one of many data visualization tools available from D3, a Javascript library. It provides the complicated framework needed to easily display data on web browsers. <a href="https://d3js.org/" target ="_blank">Check of the D3 website for more information.</a></p>
+                    <p><i class="fa fa-bullseye" aria-hidden="true"></i></i> The Liquid Fill Gauge is cleverly designed to display a percentage using moving liquid in a circle. All aspects of the gauge are customizable but for the purposes of this tutorial, I will be using the default settings. </p>
+                    <p><i class="fa fa-bullseye" aria-hidden="true"></i></i> The data I have chosen for this tutorial is land and water areas in US states from the USGS Water Science School. <a href="https://water.usgs.gov/edu/wetstates.html" target ="_blank">The original data</a> is tabular but I have created the geoJSON for you. <a href="https://drive.google.com/file/d/179rnqHOnlg_v8Rn0rQZ6ie4vtGJqQ_hn/view?usp=sharing" target ="_blank">(Download it here)</a> </p>
+                    <p><i class="fa fa-bullseye" aria-hidden="true"></i></i> Lastly, to create the Liquid Fill Gauges, I will be using code developed by Curtis Bratton in 2015. Additionally, I have used Ting's lab template to build this tutorial. So thank you to both!</p>
+
+                  <p><a id="setup" title="HTML Setup" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> HTML Setup </h3>
+
+                    <p>Most of this tutorial will look familiar to our labs but there will be some key differences you don't want to miss. Lets first set up our basemap and zoom level to show the United States. Also, I will be referring to Liquid Fill Gauges as LFG going forward. </p>
+                      <ul>
+                           <li> As usual, create a folder called <b>Lab 8</b> in your desired directory.<br>
+                             <li> Open up your favorite Code Editor (I use Atom) and copy & paste these lines: <br>
+
+                   <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Liquid Fill Gauge&lt;/title&gt;
+
+                &lt;link rel="icon" href="water.png" &gt;
+
+                &lt;link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+                integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+                crossorigin=""/&gt;
+
+                &lt;script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+                integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+                crossorigin="">&lt;/script&gt;
+
+                &lt;style type="text/css"&gt;
+                  html, body { margin: 0; padding: 0; height: 100%; }
+                  #map { min-height: 100%; }
+
+                    .legend {
+                        padding: 6px 8px;
+                        line-height: 18px;
+                        background: rgba(255,255,255,0.9);
+                        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+                        border-radius: 5px;
+                    }
+
+                    .legend i {
+                        width: 18px;
+                        height: 18px;
+                        float: left;
+                        margin-right: 8px;
+                        opacity: 0.7;
+                    }
+                &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      &lt;div id="map" style="height: 500px"&gt;&lt;/div&gt;
+
+          &lt;script type="text/javascript"&gt;
+
+              var map = L.map('map', {
+                center: [39.2381547,-95.0205755],
+                zoom: 4.98
+              });
+
+              L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                  attribution: 'Map data © OpenStreetMap contributors, CC-BY-SA, Imagery © Mapbox',
+                  id: 'mapbox.light',
+                  accessToken:'ENTER YOUR ACCESS TOKEN'
+              }).addTo(map);
+          &lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                       </li>
+                   <li> Please remember to add your mapbox <code>accessToken</code> to view the basemap on your map.
+                   <li>Save the document as <code>LFG.html</code> in your desired directory. As always, you will need to add .html to the file name to make it a webpage. </li>
+
+                  <p><a id="js" title="Link to D3 JS" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Link to D3 JS</h3>
+                    <p> To use LFGs in tooltips, we will need to provide two JavaScript files for our HTML doc to refer to. The first is the D3 Source File which is hosted on the internet. The second JavaScript file will be linked from your computer directory.<a href="https://drive.google.com/file/d/1Hzel9COPjBl4Vcgajl_L8QYgjnamPJO9/view?usp=sharing" target="_blank">You can download the second JS file here!</a></p>
+                      <li>First, we will add the D3 JavaScript to <code>LFG.html</code> so that we could use its functions to build our LFGs. Similar to how we usually add Leaflet CSS files, we will use a hosted version of the D3.js file. </li>
+                      <li>In the <code>head</code> section of your HTML document, paste the following lines:
+                  <pre><code class="language-html"> &lt;script src="http://d3js.org/d3.v5.min.js" language="JavaScript"&gt;&lt;/script&gt;</code></pre>
+                       </li>
+                       <li>Also in the <code>head</code> section, we will need to add the second JavaScript code that you downloaded from above. Make sure you saved the .js file in the same folder as <code>LFG.html</code>. Add the following line to your code:
+                  <pre><code class="language-html"> &lt;script src="LFG.js" language="JavaScript"&gt;&lt;/script&gt;</code></pre></li>
+                       </ul>
+                  <p>At this point, your <code>LGF.html</code> will still just show a basemap. We will add content in the next steps.</p>
+
+
+                  <p><a id="data" title="Add Data" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Add Data</h3>
+                    <p>Make sure you downloaded the geoJSON and saved it to your directory.
+                      <ul>
+                        <li>You will need to open it in your Code Editor, add <code>var data=</code> to the first line, and save it as <code>data.js</code> in your directory.</p>
+                          <li>In the <code>head</code> section, below the D3 JS, add in the <code>data.js</code>:
+                  <pre><code class="language-html">&lt;script type="text/javascript" src="data.js"&gt;&lt;/script&gt;</code></pre>
+                    <li>Now in the <code>body</code>, within the <code>script</code> section, we will add call functions to display the data on the map. Please add these lines under <code>L.tileLayer</code>:</li>
+
+                  <pre><code class="language-javascript"> L.geoJson(data).addTo(map); </code></pre>
+                    <p>Now you should be able to see the data layer on your map!</p>
+
+
+                  <p><a id="color" title="Add Color and Legend" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Add Color and Legend</h3>
+                    <p>Next we will display the percent water data using graduated colors. The field we will be displaying is called <code>water_per</code>. I have used <a href="http://colorbrewer2.org/#type=sequential&scheme=Blues&n=3" target ="_blank">ColorBrewer</a> for a blue color ramp.
+                      <ul>
+                        <li>I will not go into detail about adding color and a legend to the map because we have covered that in previous labs. But feel free to reach out to me if you have any questions.</li>
+                        <li> I used Natural Breaks with 5 classes to display the percent water area data. Paste in the following lines above <code>L.geoJson</code>:
+                  <pre><code class="language-javascript">function getColor(value) {
+  return value > 26.1 ? '#08519c':
+         value > 15.7  ? '#3182bd':
+         value > 9.7  ? '#6baed6':
+         value > 4.2  ? '#bdd7e7':
+                       '#eff3ff';
+}</code></pre>
+
+                  <li> After the <code>getColor</code> function, we will add the <code>style</code> function to apply the color ramp to our data:
+                  <pre><code class="language-javascript">function style(feature){
+  return {
+      fillColor: getColor(feature.properties.water_per),
+      weight: 2,
+      opacity: 1,
+      color: 'gray',
+      fillOpacity: 0.9
+  };
+  }</code></pre>
+                  <li> Finally, modify <code>L.geoJson</code> to apply the functions to the map:
+                  <pre><code class="language-javascript">L.geoJson(data, {
+      style:style
+    }).addTo(map);</code></pre>
+
+                  <li> Now that our data is properly displayed, we can add a legend. We actually did some of this work earlier in the tutorial. In the <code>head</code> section, we have already defined the appearance of our legend (I used Ting's standard legend)</li>
+                  <li> Add the following lines in the <code>script</code> section after <code>L.geoJson</code>:
+                  <pre><code class="language-javascript">var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'legend'),
+        grades = [0, 4.2, 9.7, 15.7, 26.1];
+
+    div.innerHTML = '<b>Percent Water 2014 (Square Miles)</b><br>';
+
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+        '<i style="background:' + getColor(grades[i] + 1) + '"></i>' +
+        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(map);</code></pre>
+
+                  <p><a id="mouse" title="Add mouseover Effect" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Add mouseover Effect</h3>
+                    <p> Now that we have a map and a legend, we are one step closer to adding our LFGs! Before we can use LGFs as our tooltips, we need to add a mouseoveer effect to our map.
+                      <li> To make each state highlight when you mouse over it, add the following lines of code before <code>L.geoJson</code> (again I am leaving out details because we have done this before):
+                  <pre><code class="language-javascript">function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '6',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera) {
+        layer.bringToFront();
+    }
+  }
+  var geojson;
+
+  function resetHighlight(e) {
+      geojson.resetStyle(e.target);
+
+  }
+  function onEachFeature(feature, layer) {
+      layer.on({
+          mouseover: highlightFeature,
+          mouseout: resetHighlight,
+      });
+  }</code></pre>
+
+                  <li> Modify the <code>L.geoJson</code> line with the following:
+
+                  <pre><code class="language-javascript">geojson = L.geoJson(data, {
+      style: style,
+      onEachFeature: onEachFeature
+  }).addTo(map);</code></pre>
+
+                    <b>Finally, our map is a little more INTERACTIVE!</b>
+
+                  <p><a id="LFG" title="Add LFG Tooltips" class="toc-item"></a></p>
+                  <h3><i class="fa fa-tint" aria-hidden="true"></i> Add LFG Tooltips</h3>
+                    <p> Having LFG Tooltips will be very similar to Lab 5 where we used pie/donut charts to display data about a feature. We will now use the two D3 JS files we put in the <code>head</code> section of our script.
+                      <li> First, we will need to create a placeholder for our LFG using a <code>div</code>. Within the <code>div</code>, we will be using an element called <code>&lt;svg&gt;</code> to create a container for our LFG graphics. SVG stands for Scalable Vector Graphics and has several methods for drawing shapes and texts for the web. <a href="https://www.w3schools.com/html/html5_svg.asp" target ="_blank"> You can learn more about <code>&lt;svg&gt;</code> by clicking here.</a>
+                        <li> Copy and paste the following code under your map <code>div</code> in the <code>body</code> of your document:
+                <pre><code class="language-javascript">&lt;div id= "tooltip" style="height: 90px"&gt;
+    &lt;svg id="LFG" width="80" height="80">&lt;/svg&gt;
+  &lt;/div&gt;</code></pre>
+
+                        <li> Next we will define a function to use within our <code>highlightFeature()</code> function. Make sure you add the next line of code before <code>highlightFeature()</code>:
+
+                <pre><code class="language-javascript">function makeLFG(props) {
+    var svg = d3.select("#LFG"); //remove everything from the svg before creating the new one
+    svg.selectAll("*").remove();
+    loadLiquidFillGauge("LFG", props.water_per);
+  }</code></pre>
+                    <p>I will disect these lines of code below:</p>
+                    <ol>
+                      <li> In the first line, we define a function <code>makeLFG</code> (similar to <code>makeChart</code> from Lab 5) to call later when we add tooltips to <code>highlightFeature()</code>. We are using <code>props</code> as a placeholder for the feature data we want to display.</li>
+                      <li> The second and third line of code are important for the tooltip to function properly when you mouse on a feature. It tells the document to remove a LFG before it tries to build another on for a different feature (kind of like refreshing the LFG).
+                      <li>The final line actually builds the LFG. It is using a function defined in the <code>LFG.js</code>  called <code>loadLiquidFillGauge(elementId, value, config)</code>.</li>
+                        <ul>
+                           <li><code>elementId</code>= this was defined as "LFG" when we add the <code>&lt;svg&gt;</code> element </li>
+                           <li><code>value</code>= this is how you assign a data value to the LFG. I have used <code>props.water_per</code> to bring in the data I want to display which is percent area of water in each state. The LFG is built to show percentage values so make sure when you use the LFG in your own work that you are displaying a value between 0 and 100.</li>
+                           <li><code>config</code>= as you may have noticed, we did not include this item in our code. Essentially we left it as NULL. Within the <code>LFG.js</code> there is a conditional statement saying if config= NULL, use default settings for the LFG. I will be using the default settings in my tutorial but you will need to change at least 3 features in your final map. <a href="https://drive.google.com/file/d/1YgbHDWdCc08I6YSImyrI9vLfPTet2pPd/view?usp=sharing" target ="_blank">Take a look at this quick guide on how to customize LFGs</a>.</li>
+                        </ul></ol>
+
+                      <li> Now we will make <code>makeLFG</code> a part of the mouseover effect by adding it within <code>highlightFeature()</code>. This will give access to the attribute values within out data. <br>
+                        <p>Please modify <code>highlightFeature()</code> to the following:</p>
+                <pre><code class="language-javascript">function highlightFeature(e) {
+var layer = e.target;
+
+layer.setStyle({
+    weight: 5,
+    color: '#666',
+    dashArray: '6',
+    fillOpacity: 0.7
+});
+
+if (!L.Browser.ie && !L.Browser.opera) {
+    layer.bringToFront();
+}
+
+makeLFG(layer.feature.properties);
+}</code></pre>
+
+                  <b> LAST FEW STEPS</b>
+
+                <p> Now we can make the LFGs into tooltips using <code>bindTooltip</code>.
+                  <li> Place the following code before <code>L.geoJson</code> so we can bind the LFG to the map features. We will be referring back to the <code>div</code> where we created the id <code>"tooltip"</code>:
+                <pre><code class="language-javascript"> var tooltip = document.getElementById("tooltip");</code></pre>
+                  <li> To finish, modify the <code>L.geoJson</code> line with the following:
+                <pre><code class="language-javascript">geojson = L.geoJson(data, {
+    style:style,
+    onEachFeature: onEachFeature
+}).bindTooltip(tooltip).addTo(map);</code></pre>
+
+                <p>That's it! <a href="https://drive.google.com/file/d/1mJKHHwx-glgqG1JFBx_j1vxRL9e33QOd/view?usp=sharing" title="Flaticon">You can check out the sample code here </a>OR just enjoy the Liquid Fill Gauges before making your own!</p>
+
+                <p><a id="your turn" title="Your Turn" class="toc-item"></a></p>
+                <h2><i class="fa fa-tint" aria-hidden="true"></i> Your Turn</h2>
+                    <li>Save the html file as <code>Lab8.html</code>.
+                    <li>Modify the code to use Liquid Fill Guages as tooltips <b>with your own data.</b> <br>
+                    <li>Include <b>at least 3 custom features</b> in your Liquid Fill Gauges. You can change more if you like. Make sure to check out the <a href="https://drive.google.com/file/d/1YgbHDWdCc08I6YSImyrI9vLfPTet2pPd/view?usp=sharing" title="Flaticon">customization guide</a> before you do this step! If you are not sure what you want to change, <a href="https://codepen.io/jesseangelo/pres/waZooE" title="Flaticon">play around with this live LFG code editor by D3.</a>
+                      <li>How to submit? - <b>Host your web page and submit the URL on D2L</b> <br>
+                    </li><br>
+                  </ul>
+            </div>
+            </div>
+        </article>
+
+          <footer>
+            <div class="wrap">
+
+              <p>Copyright &copy; Ting Liu 2018</p>
+                <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+
+            </div>
+          </footer>
+
+            <script src="prism.js"></script>
+
+     </body>
+</html>
